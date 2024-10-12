@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+
+{% block content%}
+
+<style>
+  .card{
+    margin-bottom: 40vh;
+    border: none;
+    
+  }
+
+  .btn {
+    font-weight: 500;
+  }
+  a{
+    text-decoration: none;
+  }
+  .task-link{
+    color: black;
+    font-weight: 500; 
+  }
+  .task-link:hover{
+    color: rgb(92, 75, 55);
+  }
+</style>
+
+<div class="container">
+  <div class="text-center"><h2>Lista  de Tarefas </h2></div>
+  <hr>
+  
+  <div class="">
+    
+    <div class="d-flex justify-content-between mb-3">
+      <a class="btn btn-success" href="{% url 'task-add' %}">
+        <i class='bx bx-layer-plus'></i> Adicionar tarefa
+      </a>
+      
+      <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#filterModal">
+        Filtros  <i class='bx bx-filter-alt' ></i>
+      </button>
+    </div>
+    
+    
+  </div>
+  <br>
+  <div class="card">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Usuário</th>
+          <th scope="col">Data de Criação</th>
+          <th scope="col">Título</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+    
+        <tbody class="table-group-divider">
+          {% if page_obj %}
+            {% for task in page_obj %}
+                <tr>
+                  <th scope="row">{{ forloop.counter }}</th>
+                  <td><i class='bx bx-user-circle' ></i> {{ task.user }}</td>
+                  <td>{{ task.created_at |date:"d/m/Y H:i" }}</td>
+                  <td><a class="task-link" href="{% url 'task-edit' task.id  %}">{{ task.description | upper  }}</a> </td>
+                  <td>{% if task.status %}
+                      <a href="{% url 'change-status' task.id %}">
+                        <span style=" font-weight: 600; color: green;">
+                          Concluída <i  class='bx bx-check'></i>
+                        </span>
+                      </a> 
+                      {% else %}
+                      <a href="{% url 'change-status' task.id %}">
+                        <span style="font-weight: 600; color: rgb(168, 121, 18);">
+                          Em Andamento  <i class='bx bx-loader' ></i>
+                        </span>  
+                      </a>
+                      {% endif %}
+                  <td>
+                      <a href="{% url 'time-add' task.id %}" class="btn btn-secondary">
+                        Registrar tempo <i class='bx bx-timer' ></i>
+                      </a>
+                  </td>
+                  <td> 
+                    <button id="detele-{{ task.id }}" title="Deletar" style="border: none; background-color: transparent;">
+                      <i style="color: red;" class='bx bxs-trash' ></i>
+                    </button>
+                  </td>
+                </tr> 
+                {% empty %}
+                <tr>
+                  <th scope="row">1</th>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                  
+                </tr>    
+            {% endfor %}
+            {% endif %}    
+        </tbody>
+  </table>
+
+  </div>
+    
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="filterModalLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="get" action="">
+          <div class="form-group">
+            <label for="id_user">Usuário</label>
+            {{ filter.form.user }}
+          </div>
+          <div class="form-group">
+            <label for="start_date">Data Inicial:</label>
+            <input type="date" id="start_date" name="created_at_after" class="form-control" placeholder="DD/MM/AAAA">
+        </div>
+        
+        <div class="form-group">
+            <label for="end_date">Data Final:</label>
+            <input type="date" id="end_date" name="created_at_before" class="form-control" placeholder="DD/MM/AAAA">
+        </div>
+          <div class="form-group">
+            <label for="id_description">Título</label>
+            {{ filter.form.description   }}
+          </div>
+          <div class="form-group">
+            <label for="id_status">Status</label>
+            {{ filter.form.status   }}
+          </div>
+          <br>
+          
+          <div>
+            <button type="submit" class="btn btn-success">Filtrar</button>
+          </div>
+          
+        </form>
+        
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+  
+  $(document).ready(function(){
+    flatpickr("#start_date", {
+        dateFormat: "d/m/Y",  // Formato de data DD/MM/AAAA
+        altInput: true,       // Mostra um campo formatado
+        altFormat: "d/m/Y",   // Formato exibido ao usuário
+        allowInput: true      // Permite inserir manualmente a data
+    });
+
+    flatpickr("#end_date", {
+        dateFormat: "d/m/Y",
+        altInput: true,
+        altFormat: "d/m/Y",
+        allowInput: true
+    });
+
+    $('#id_user').addClass('form-control');
+    $("#id_start_date").addClass('form-control');
+    $("#id_start_date").mask('00/00/0000');
+    $('#id_created_at').attr('placeholder', 'dia/mes/ano');
+    $("#id_description").addClass('form-control')
+    $("#id_status").addClass('form-control');
+
+
+
+    $('#id_registration_date').mask('00/00/0000');  // Aplica a máscara ao campo
+    {% if page_obj %}
+      {% for task in page_obj %}
+          document.querySelector('#detele-{{ task.id }}').onclick = function(){
+            Swal.fire({
+              title: "Tem certeza que quer excluir essa tarefa?",
+              text: "Depois de deleta-la não poderá voltar atrás!",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#3085d6",
+              cancelButtonColor: "#d33",
+              confirmButtonText: "Sim, quero deletar",
+              cancelButtonText : "Cancelar"
+            }).then((result) => {
+              if (result.isConfirmed) {
+                Swal.fire({
+                  title: "Deletado!",
+                  text: "Você deletou a tarefa ( {{task}} ).",
+                  icon: "success"
+                }).then((result) =>{
+                  window.location.href ="{% url 'delete_task' task.id %}"
+                })
+                
+              }
+            });
+        }
+      {% endfor %}
+    {% endif %}  
+    
+    
+  });
+
+
+</script>
+
+
+{% endblock %}

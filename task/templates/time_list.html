@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block content%}
+
+<style>
+  .card{
+    margin-bottom: 50vh;
+    border: none;
+  }
+
+  .time-link{
+    color: black;
+    font-weight: 500; 
+  }
+  .time-link:hover{
+    color: rgb(92, 75, 55);
+  }
+</style>
+<div class="container">
+  <div class="text-center"><h2>Lista  de Tempo </h2></div>
+  <hr>
+  <div class="d-flex justify-content-end">
+    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#filterModal">
+      Filtros  <i class='bx bx-filter-alt' ></i>
+    </button>
+    
+  </div>
+  <br>
+  <div class="card">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Data</th>
+          <th scope="col">Horas</th>
+          <th scope="col">Descrição</th>
+          <th scope="col">Usuário</th>
+          <th scope="col">Tarefa</th>
+        </tr>
+      </thead>
+    
+        <tbody class="table-group-divider">
+          {% if page_obj %}
+            {% for time in page_obj %}
+                <tr>
+                  <th scope="row">{{ forloop.counter }}</th>
+                  <td>{{ time.registration_date |date:"d/m/Y" }}</td>
+                  <td>{{ time.convert_minutes }}</td>
+                  {% if request.user == time.task.user %}
+                    <td><a class="time-link" href="{% url 'time-add' time.task.id  %}">{{ time.description | upper  }}</a></td>
+                  {% else %}
+                    <td><a class="time-link" href="">{{ time.description | upper  }}</a></td>
+                  {% endif %}
+                  <td>{{ time.task.user}}</td>
+                  <td>{{ time.task }}</td>
+                  {% if request.user == time.task.user %}
+                  <td> 
+                    <button id="detele-{{ time.id }}" title="Deletar" style="border: none; background-color: transparent;">
+                      <i style="color: red;" class='bx bxs-trash' ></i>
+                    </button>
+                  </td>
+                  {% else %}
+                  <td> 
+                    -
+                  </td>
+                  {% endif %}
+                </tr> 
+                {% empty %}
+                <tr>
+                  <th scope="row">1</th>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                </tr>    
+            {% endfor %}    
+          {% else  %}
+          <tr>
+            <th scope="row">1</th>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+          </tr>    
+          {% endif %}  
+        </tbody>
+  </table>
+
+  </div>
+    
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="filterModalLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="get" action="">
+          <div class="form-group">
+            {{ filter.form.task.label }}
+            {{ filter.form.task }}
+          </div>
+          <div class="form-group">
+            <label for="start_date">Data Inicial:</label>
+            <input type="date" id="start_date" name="registration_date_after" class="form-control" placeholder="DD/MM/AAAA">
+        </div>
+        
+        <div class="form-group">
+            <label for="end_date">Data Final:</label>
+            <input type="date" id="end_date" name="registration_date_before" class="form-control" placeholder="DD/MM/AAAA">
+        </div>
+          <br>
+          
+          <div>
+            <button type="submit" class="btn btn-success">Filtrar</button>
+          </div>
+          
+        </form>
+        
+      </div>
+      
+    </div>
+  </div>
+</div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+  $(document).ready(function(){
+   
+    flatpickr("#start_date", {
+        dateFormat: "d/m/Y",  // Formato de data DD/MM/AAAA
+        altInput: true,       // Mostra um campo formatado
+        altFormat: "d/m/Y",   // Formato exibido ao usuário
+        allowInput: true      // Permite inserir manualmente a data
+    });
+
+    flatpickr("#end_date", {
+        dateFormat: "d/m/Y",
+        altInput: true,
+        altFormat: "d/m/Y",
+        allowInput: true
+    });
+
+    $('#id_task').addClass('form-control');
+    $("#id_registration_date").addClass('form-control');
+    $('#id_registration_date').attr('placeholder', 'dia/mes/ano');
+    $("#id_registration_date").mask('00/00/0000');
+
+    {% if page_obj %}
+      {% for time in page_obj %}
+          document.querySelector('#detele-{{ time.id }}').onclick = function(){
+            Swal.fire({
+              title: "Tem certeza que quer excluir esse Registro?",
+              text: "Depois de deleta-lo não poderá voltar atrás!",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#3085d6",
+              cancelButtonColor: "#d33",
+              confirmButtonText: "Sim, quero deletar",
+              cancelButtonText : "Cancelar"
+            }).then((result) => {
+              if (result.isConfirmed) {
+                Swal.fire({
+                  title: "Deletado!",
+                  text: "Você deletou o Registro.",
+                  icon: "success"
+                }).then((result) =>{
+                  window.location.href ="{% url 'delete_record' time.id %}"
+                })
+                
+              }
+            });
+        }
+      {% endfor %}
+    {% endif %}  
+     
+   
+
+    
+  });
+
+</script>
+  
+
+
+{% endblock %}

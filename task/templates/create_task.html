@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content%}
+<style>
+    .card{
+        border: none;
+        margin-bottom: 400px;
+    }
+</style>
+<div class="container">
+    <div class="row">
+        
+        <div class="col-lg-12">
+           {% if task %} <h2 class="">Editar Tarefa</h2> {% else %} <h2 class="">Cadastrar Tarefa</h2> {% endif %}
+            <span>Para adiconar uma tarefa, basta inserir os campos abaixo corretamente e clicar em adicionar.</span>
+        </div>
+        
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <div class="form-group col-md-6">
+                                <label for="id_description">Título</label>
+                                {{ form.description }}
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" id="submit" class="btn btn-primary">Adicionar</button>
+                            </div>
+                        
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#id_description").addClass('form-control')
+</script>
+{% endblock %}
